@@ -1,0 +1,26 @@
+{
+  "name": "timetracking",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/domi7891/timetracking.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/domi7891/timetracking/issues"
+  },
+  "homepage": "https://github.com/domi7891/timetracking#readme",
+  "devDependencies": {
+    "electron": "^10.1.2",
+    "electron-reload": "^1.5.0"
+  },
+  "dependencies": {
+    "moment": "^2.29.0"
+  }
+}

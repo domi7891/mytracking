@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    *,
+    html {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: white;
+    }
+
+    h1 {
+      margin-top: 25px;
+      text-align: center;
+      font-size: 1.25rem;
+    }
+
+    .button-row {
+      margin: 20px auto;
+      width: 50%;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    button {
+      outline: none;
+      border: 1px solid white;
+      border-radius: 5px;
+      background-color: transparent;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+
+<body>
+  <script>
+    // You can also require other files to run in this process
+    const {
+      init
+    } = require('render.js')
+    init();
+  </script>
+  <h1>Soll die Zeitaufzeichnung gestartet werden?</h1>
+  <div class="button-row">
+    <button id="start">Starten</button>
+    <button id="close">Jetzt nicht</button>
+  </div>
+
+  <script>
+    let start = document.querySelector('#start');
+    let close = document.querySelector('#close');
+    start.onclick = (e) => {
+      const {
+        ipcRenderer
+      } = require('electron');
+      ipcRenderer.send('startTimeTracking', 'timeTracking.html');
+
+    }
+
+    close.onclick = (e) => {
+      const {
+        ipcRenderer
+      } = require('electron');
+      ipcRenderer.send('closeTracking')
+    }
+  </script>
+
+</body>
+
+</html>

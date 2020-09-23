@@ -1,0 +1,15 @@
+{
+  "name": "timetrackingdashboard",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "set NODE_ENV=development&&electron ."
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "electron": "^10.1.2",
+    "electron-reload": "^1.5.0"
+  }
+}

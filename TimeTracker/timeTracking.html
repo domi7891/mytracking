@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <script type="text/javascript" src="segment-display.js"></script>
+  <style>
+    *,
+    html {
+      margin: 0;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    canvas {
+      height: 50vh;
+      margin: 0;
+      width: 50vw;
+      display: block;
+      margin: 0 auto;
+      /* background-color: red; */
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100vw;
+      height: 100vh;
+      overflow: auto;
+      background-color: rgb(0, 0, 0);
+      background-color: rgba(0, 0, 0, 0.75);
+    }
+
+    .modal-content {
+      background-color: #ffffff;
+      margin: 15vh auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 80%;
+      text-align: center;
+    }
+
+    .modal-content>div {
+      margin: 0 auto;
+      width: 75%;
+      display: flex;
+      justify-content: space-evenly;
+    }
+
+    .modal-content button {
+      outline: none;
+      background-color: transparent;
+      border: 1px solid black;
+      border-radius: 10px;
+      padding: 2.5px 10px;
+      cursor: pointer;
+    }
+
+
+    h3 {
+      margin: 0 auto 10px auto
+    }
+
+    select {
+      outline: none;
+      border: 1px solid black;
+      border-radius: 10px;
+      padding: 2.5px 10px;
+      align-items: center;
+    }
+
+    .close {
+      position: fixed;
+      top: 14%;
+      right: 6%;
+      color: #000;
+      float: right;
+      font-size: 25px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="display">
+    Your browser is unfortunately not supported.
+  </canvas>
+
+  <div>
+    <button id="pause">Pause</button>
+    <button id="save">Stop & Save</button>
+  </div>
+
+  <div id="myModal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>Please choose a Project</h3>
+      <div>
+        <select id="projects">
+          <option>--- Choose ---</option>
+        </select>
+        <button id="saveToJson">Save</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script type="text/javascript">
+    let moment = require('moment')
+
+    let pause = document.querySelector('#pause')
+    let save = document.querySelector('#save')
+    let modal = document.querySelector('#myModal');
+    let dropDown = document.querySelector('#projects')
+    let close = document.querySelector('.close')
+    let saveToJson = document.querySelector('#saveToJson')
+
+    let data
+
+    fetch('../times.json')
+      .then(response => response.json())
+      .then(json => {
+        data = json;
+        Object.keys(json).forEach((value, index) => {
+          console.log(value);
+          var el = document.createElement("option");
+          el.textContent = value;
+          el.value = value;
+          dropDown.appendChild(el);
+        })
+      })
+
+    var display = new SegmentDisplay("display");
+    display.digitHeight = 32.5;
+    display.digitWidth = 17.5;
+    display
+      .digitDistance = 3.5;
+    display.segmentWidth = 2.5;
+    display.segmentDistance = 2;
+    display.draw();
+
+    let startTime = Date.now()
+    let elapsedTime = 0;
+    let interval
+
+    function start() {
+      startTime = Date.now() - elapsedTime
+      interval = setInterval(() => {
+        elapsedTime = Date.now() - startTime;
+        display.setValue(timeToString(elapsedTime))
+      }, 100)
+      pause.onclick = (e) => {
+        pause.innerHTML = "Continue"
+        clearInterval(interval)
+        pause.onclick = (e) => {
+          start();
+          pause.innerHTML = "Pause"
+        }
+      }
+    }
+
+    start()
+
+    save.onclick = (e) => {
+      pause.click()
+      modal.style.display = "block";
+    }
+
+    close.onclick = (e) => {
+      modal.style.display = "none";
+      pause.click()
+    }
+
+    saveToJson.onclick = (e) => {
+      var selected = dropDown.options[dropDown.selectedIndex].value;
+      data["TimeTracking"].times[moment(Date.now()).format('YYYY-MM-DDTHH:mm:ss')] = timeToString(elapsedTime);
+      var fs = require('fs');
+      fs.writeFile("../times.json", JSON.stringify(data), function (err) {
+        if (err)
+          alert(err)
+      })
+      const {
+        ipcRenderer
+      } = require('electron');
+      ipcRenderer.send('closeTracking');
+    }
+
+    function timeToString(time) {
+      let diffInHrs = time / 3600000;
+      let hh = Math.floor(diffInHrs);
+
+      let diffInMin = (diffInHrs - hh) * 60;
+      let mm = Math.floor(diffInMin);
+
+      let diffInSec = (diffInMin - mm) * 60;
+      let ss = Math.floor(diffInSec);
+
+      let formattedHH = hh.toString().padStart(2, "0");
+      let formattedMM = mm.toString().padStart(2, "0");
+      let formattedSS = ss.toString().padStart(2, "0");
+
+      return `${formattedHH}:${formattedMM}:${formattedSS}`;
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+      /* background-color: gray; */
+    }
+
+    .tabs {
+      position: fixed;
+      margin-bottom: 30px;
+      top: 0;
+      left: 0;
+      width: 100%;
+      background-color: #f1f1f1;
+      border-bottom: 1px solid #ccc;
+      /* background-color: red; */
+    }
+
+
+    .tabs button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 5px 10px;
+      transition: 0.3s;
+    }
+
+    .tabs button:hover {
+      background-color: #ddd;
+    }
+
+    .tabs button.active {
+      background-color: #ccc;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 5%;
+    }
+
+    tbody {
+      width: 100%;
+    }
+
+    tr {
+      width: 100%;
+    }
+
+    th,
+    td {
+      text-align: center;
+      width: 50%;
+      padding: 10px 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="tabs">
+    <!-- <button class="tablinks active" onclick="openCity(event, 'London')">London</button>
+    <button class="tablinks" onclick="openCity(event, 'Paris')">Paris</button>
+    <button class="tablinks" onclick="openCity(event, 'Tokyo')">Tokyo</button> -->
+  </div>
+  <table id="timeTable">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Time</th>
+      </tr>
+    </thead>
+    <tbody>
+
+    </tbody>
+  </table>
+
+  <script>
+    let tabs = document.querySelector('.tabs')
+    let table = document.querySelector('#timeTable tbody')
+    let currentIndex = 0;
+    fetch('../times.json')
+      .then(res => res.json())
+      .then(res => {
+        Object.entries(res).forEach(([key, value], index) => {
+          let button = document.createElement('button')
+          button.onclick = (e) => {
+            currentIndex = index
+            document.querySelector(".active").classList.remove("active")
+            button.classList.add("active")
+            table.innerHTML = ""
+            fetch('../times.json')
+              .then(res => res.json())
+              .then(res => {
+                loadDataIntoTable(table, value.times)
+              })
+          }
+          button.innerHTML = key;
+          button.classList.add("tablinks")
+          if (index == currentIndex)
+            button.classList.add("active")
+          tabs.appendChild(button)
+          if (index == currentIndex)
+            loadDataIntoTable(table, value.times)
+        });
+      })
+
+    function loadDataIntoTable(table, times) {
+      Object.entries(times).forEach(([date, time]) => {
+        let trData = document.createElement("tr");
+        let dateCell = document.createElement("td");
+        let timeCell = document.createElement("td");
+        dateCell.innerHTML = formatDate(date)
+        timeCell.innerHTML = time
+        trData.appendChild(dateCell)
+        trData.appendChild(timeCell)
+        table.appendChild(trData)
+      })
+    }
+
+    function formatDate(dateString) {
+      let [date, time] = dateString.split("T")
+      let [year, month, day] = date.split("-")
+      return `${day}.${month}.${year} ${time}`
+    }
+  </script>
+</body>
+
+</html>
