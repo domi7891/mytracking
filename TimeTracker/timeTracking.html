@@ -181,7 +181,11 @@
 
     saveToJson.onclick = (e) => {
       var selected = dropDown.options[dropDown.selectedIndex].value;
-      data["TimeTracking"].times[moment(Date.now()).format('YYYY-MM-DDTHH:mm:ss')] = timeToString(elapsedTime);
+      data["TimeTracking"].times[moment(Date.now()).format('YYYY-MM-DDTHH:mm:ss')] = {
+        "startTime": moment(startTime).format('HH:mm:ss'),
+        "endTime": moment(Date.now()).format('HH:mm:ss'),
+        "hours": timeToString(elapsedTime),
+      };
       var fs = require('fs');
       fs.writeFile("../times.json", JSON.stringify(data), function (err) {
         if (err)
