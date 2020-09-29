@@ -23,7 +23,7 @@ function createWindow() {
   } = electron.screen.getPrimaryDisplay().workAreaSize;
 
   let window = new BrowserWindow({
-    width: 700,
+    width: 980,
     height: 500,
     center: true,
     transparent: false,

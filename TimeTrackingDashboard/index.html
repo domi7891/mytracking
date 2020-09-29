@@ -19,6 +19,26 @@
       margin: 0;
     }
 
+    ::-webkit-scrollbar {
+      width: 7.5px;
+    }
+
+    /* Track */
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    /* Handle */
+    ::-webkit-scrollbar-thumb {
+      background: rgb(219, 219, 219);
+      border-radius: 10px;
+    }
+
+    /* Handle on hover */
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgb(155, 155, 155);
+    }
+
     .tabs {
       position: fixed;
       margin-bottom: 30px;
@@ -95,7 +115,7 @@
     }
 
     .modal {
-      display: block;
+      display: none;
       position: absolute;
       z-index: 1;
       left: 0;
@@ -181,6 +201,22 @@
       cursor: pointer;
     }
 
+    .floatingButtonDiv {
+      position: fixed;
+      right: 10px;
+      bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: white;
+      padding: 5px;
+      box-shadow: 0 0 25px -2.5px #000;
+      cursor: pointer;
+    }
+
 
     /* .loader {
       display: none;
@@ -241,6 +277,10 @@
 
   </div>
 
+  <div class="floatingButtonDiv">
+    <i class="fa fa-sync"></i>
+  </div>
+
   <script>
     let data
     let tabs = document.querySelector('.tabs')
@@ -259,37 +299,61 @@
         floatContainer.classList.remove('active');
     });
 
+    let floatingActionButton = document.querySelector('.floatingButtonDiv')
+    floatingActionButton.onclick = (e) => {
+      floatingActionButton.children[0].classList.add('fa-spin')
+      setTimeout(() => {
+        floatingActionButton.children[0].classList.remove('fa-spin')
+        fetch('../times.json')
+          .then(res => res.json())
+          .then(res => {
+            data = res
+            createTable()
+          })
+      }, 1500)
+    }
+
     let currentIndex = 0;
     fetch('../times.json')
       .then(res => res.json())
       .then(res => {
         data = res
-        Object.entries(res).forEach(([key, value], index) => {
-          let button = document.createElement('button')
-          button.onclick = (e) => {
-            currentIndex = index
-            document.querySelector(".active").classList.remove("active")
-            button.classList.add("active")
-            table.innerHTML = ""
-            fetch('../times.json')
-              .then(res => res.json())
-              .then(res => {
-                data = res
-                loadDataIntoTable(table, value.times)
-              })
-          }
-          button.innerHTML = key;
-          button.classList.add("tablinks")
-          if (index == currentIndex)
-            button.classList.add("active")
-          tabs.appendChild(button)
-          if (index == currentIndex)
-            loadDataIntoTable(table, value.times)
-        });
-
+        createTable()
       })
 
+    function createTable() {
+      let elements = document.querySelectorAll(".tabs .tablinks")
+      while (elements[0]) {
+        elements[0].parentNode.removeChild(elements[0]);
+        elements = document.querySelectorAll(".tabs .tablinks")
+      }
+
+      Object.entries(data).forEach(([key, value], index) => {
+        let button = document.createElement('button')
+        button.onclick = (e) => {
+          currentIndex = index
+          document.querySelector(".active").classList.remove("active")
+          button.classList.add("active")
+          table.innerHTML = ""
+          fetch('../times.json')
+            .then(res => res.json())
+            .then(res => {
+              data = res
+              loadDataIntoTable(table, Object.values(data)[currentIndex].times)
+            })
+        }
+        button.innerHTML = key;
+        button.classList.add("tablinks")
+        if (index == currentIndex)
+          button.classList.add("active")
+        tabs.appendChild(button)
+        if (index == currentIndex)
+          loadDataIntoTable(table, value.times)
+      });
+    }
+
     function loadDataIntoTable(table, times) {
+      table.innerHTML = ""
       let total = 0;
       Object.entries(times).forEach(([date, infos]) => {
         let trData = document.createElement("tr");
@@ -332,7 +396,6 @@
     function getSecOfHourString(hours) {
       let [hour, minute, second] = hours.split(":")
       let ret = parseInt(second) + (parseInt(minute) * 60) + (parseInt(hour) * 3600)
-      console.log(ret);
       return ret
     }
 
@@ -356,16 +419,24 @@
 
     function addNewProject() {
       modal.style.display = "block";
-      data["newProject"] = {
-        "times": {}
-      }
-      console.log(data);
     }
 
     function createProject() {
       let val = document.querySelector("#projectName").value
       if (val.length > 3) {
+        data[val] = {
+          "times": {}
+        }
+        var fs = require('fs');
+        fs.writeFile("../times.json", JSON.stringify(data), function (err) {
+          if (err)
+            alert(err)
+        })
+        document.querySelector("#projectName").value = ""
+        document.getElementById('inputContainer').classList.remove('active')
+        modal.style.display = "none"
 
+        createTable()
       }
     }
 
